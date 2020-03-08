@@ -1,10 +1,15 @@
 version: 2.1
 orbs:
   node: circleci/node@1.1.6
+
+defaults: &defaults
+  working_directory: ~/repo
+  docker:
+    - image: circleci/node:12.10 
+
 jobs:
   build-and-test:
-    docker:
-        — image: circleci/node:12.10  
+    <<: *defaults
     steps:
       - checkout
       - node/with-cache:
@@ -12,6 +17,10 @@ jobs:
             - run: yarn install
             - run: npx eslint .
             - run: ENV_SILENT=true yarn test
+      - persist_to_workspace:
+          root: ~/repo
+          paths: .
+
   publish_tag:
     docker:
       - image: buildpack-deps:trusty
@@ -19,13 +28,24 @@ jobs:
       - checkout
       - add_ssh_keys:
           fingerprints:
-            - "47:28:4f:85:5f:22:61:00:6b:fd:2c:14:92:f8:90:ce"
+            - "7d:e5:c7:96:fd:0e:b4:ec:1c:49:8f:ea:37:03:f2:82"
       - run:
           name: "Generate tag"
           command: bash <(curl -Ls https://raw.githubusercontent.com/josemiguelmelo/next-git-version/master/generate.sh) > VERSION
       - run:
           name: "Publish tag"
           command: git tag $(cat VERSION) && git push --tags
+  deploy:
+    <<: *defaults
+    steps:
+      - attach_workspace:
+          at: ~/repo
+      - run:
+          name: Authenticate with registry
+          command: echo "//registry.npmjs.org/:_authToken=$NPM_TOKEN" > ~/repo/.npmrc
+      - run:
+          name: Publish package
+          command: npm publish
 workflows:
   version: 2
   build-and-publish:
@@ -34,7 +54,7 @@ workflows:
       - publish_tag:
           requires:
             - build-and-test
-          filters:
-            branches:
-              only:
-                - master
+          
+      - deploy:
+          requires:
+            - publish_tag
