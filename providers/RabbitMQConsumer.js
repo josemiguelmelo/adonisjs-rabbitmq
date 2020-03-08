@@ -3,10 +3,11 @@ const RabbitMQService = require('./RabbitMQService')
 class RabbitMQConsumer extends RabbitMQService {
   constructor(Config, logger) {
     super(Config, logger, 'Consumer')
+    this.listeners = Config.get('queues.rabbitmq.consumers')
   }
 
-  startConsumer(listeners) {
-    if (!this._connection) { return setTimeout(() => this.startConsumer(listeners), 1000) }
+  startConsumer() {
+    if (!this._connection) { return setTimeout(() => this.startConsumer(), 1000) }
 
     this._connection.createChannel((err, ch) => {
       if (this.closeOnErr(err)) return
@@ -20,7 +21,7 @@ class RabbitMQConsumer extends RabbitMQService {
       this._channel = ch
 
       this._channel.prefetch(10)
-      listeners.forEach(l => {
+      this.listeners.forEach(l => {
         this._channel.assertExchange(l.exchange, 'fanout', {
           durable: false
         })

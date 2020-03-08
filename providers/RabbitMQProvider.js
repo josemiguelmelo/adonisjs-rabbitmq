@@ -10,7 +10,7 @@ class RabbitMQProvider extends ServiceProvider {
 
       const consumer = new RabbitMQConsumer(Config, Logger)
 
-      consumer.connect(() => { })
+      consumer.connect(() => { consumer.startConsumer() })
 
       return consumer
     })

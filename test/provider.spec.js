@@ -17,6 +17,13 @@ before(function() {
   ioc.singleton('Adonis/Src/Config', () => {
     const config = new Config()
     config.set('queues.rabbitmq.url', 'amqp://rabbitmq:rabbitmq@localhost:5672/')
+    config.set('queues.rabbitmq.consumers', [
+      {
+        queueName: 'test',
+        exchange: 'exchange',
+        handler: (content) => content.toString()
+      }
+    ])
     return config
   })
 
@@ -62,20 +69,29 @@ describe('RabbitMQ', function() {
     done()
   })
 
+  it('should have consumers on consumer list', function(done) {
+    assert.equal(consumer.listeners.length, 1)
+    const content = 'testing'
+    assert.equal(consumer.listeners[0].handler(content), content)
+    done()
+  })
+
   it('should send data over the queue', function(done) {
     const contentToSend = 'testing content'
     const exchange = 'test'
 
-    consumer.startConsumer([
+    consumer.listeners = [
       {
         queueName: 'test',
-        exchange,
+        exchange: 'test',
         handler: (content) => {
           assert.equal(content.content.toString(), contentToSend)
           done()
         }
       }
-    ])
+    ]
+
+    consumer.connect(() => { consumer.startConsumer() })
 
     setTimeout(() => done('Timeout exceeded'), 1000)
 
