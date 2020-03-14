@@ -32,7 +32,7 @@ class RabbitMQService {
 
     this._connection.on('close', () => {
       this.logger.error('[AMQP] reconnecting')
-      return setTimeout(() => this.connect(), 1000)
+      return setTimeout(() => this.connect(() => { this.logger.info('[AMQP] ended') }), 1000)
     })
   }
 

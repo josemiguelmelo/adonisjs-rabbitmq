@@ -11,10 +11,10 @@ class RabbitMQConsumer extends RabbitMQService {
 
     this._connection.createChannel((err, ch) => {
       if (this.closeOnErr(err)) return
-      ch.on('error', function(err) {
+      ch.on('error', (err) => {
         this.logger.error('[AMQP Consumer] channel error', err.message)
       })
-      ch.on('close', function() {
+      ch.on('close', () => {
         this.logger.info('[AMQP Consumer] channel closed')
       })
 
