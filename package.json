@@ -1,0 +1,40 @@
+{
+  "name": "adonisjs-rabbitmq",
+  "version": "0.0.2",
+  "description": "AdonisJS RabbitMQ provider",
+  "repository": "https://github.com/josemiguelmelo/adonisjs-rabbitmq.git",
+  "license": "MIT",
+  "author": "<josemiguelmelo94@gmail.com>",
+  "main": "index.js",
+  "scripts": {
+    "eslint": "npx eslint .",
+    "test": "npx mocha --exit"
+  },
+  "husky": {
+    "hooks": {
+      "pre-commit": "npx sort-package-json && git add package.json && npx eslint . && ENV_SILENT=true yarn test"
+    }
+  },
+  "dependencies": {
+    "amqplib": "^0.5.5"
+  },
+  "devDependencies": {
+    "@adonisjs/fold": "^4.0.9",
+    "@adonisjs/sink": "^1.0.17",
+    "chai": "^4.2.0",
+    "eslint": "^6.8.0",
+    "eslint-config-standard": "^14.1.0",
+    "eslint-plugin-import": "^2.20.1",
+    "eslint-plugin-node": "^11.0.0",
+    "eslint-plugin-promise": "^4.2.1",
+    "eslint-plugin-standard": "^4.0.1",
+    "exp-fake-amqplib": "^3.0.3",
+    "husky": "^4.2.3",
+    "japa": "^3.0.1",
+    "japa-cli": "^1.0.1",
+    "mocha": "^7.1.0",
+    "mock-amqplib": "^1.3.0",
+    "mock-require": "^3.0.3",
+    "sort-package-json": "^1.40.0"
+  }
+}

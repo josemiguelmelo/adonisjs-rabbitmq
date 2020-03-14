@@ -1,0 +1,24 @@
+{
+  "env": {
+    "es6": true,
+    "node": true
+  },
+  "extends": [
+    "standard"
+  ],
+  "globals": {
+    "Atomics": "readonly",
+    "SharedArrayBuffer": "readonly",
+    "use": true
+  },
+  "ignorePatterns": "public",
+  "parserOptions": {
+    "ecmaVersion": 2018
+  },
+  "rules": {
+    "space-before-function-paren": [
+      "error",
+      "never"
+    ]
+  }
+}
