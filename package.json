@@ -1,6 +1,6 @@
 {
   "name": "adonisjs-rabbitmq",
-  "version": "1.0.0",
+  "version": "0.0.1",
   "description": "AdonisJS RabbitMQ provider",
   "repository": "https://github.com/josemiguelmelo/adonisjs-rabbitmq.git",
   "license": "MIT",

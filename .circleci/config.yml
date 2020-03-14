@@ -8,41 +8,59 @@ defaults: &defaults
     - image: circleci/node:12.10 
 
 jobs:
-  build-and-test:
+  checkout_and_version:
     <<: *defaults
     steps:
       - checkout
-      - node/with-cache:
-          steps:
-            - run: yarn install
-            - run: npx eslint .
-            - run: ENV_SILENT=true yarn test
+      - run:
+          name: "Generate tag"
+          command: bash <(curl -Ls https://raw.githubusercontent.com/josemiguelmelo/next-git-version/master/generate.sh) > VERSION
       - persist_to_workspace:
           root: ~/repo
-          paths: .
+          paths: "*"
+
+  build_and_test:
+    <<: *defaults
+    steps:
+      - node/with-cache:
+          steps:
+            - attach_workspace:
+                at: ~/repo
+            - run: yarn install
+            - run: npx eslint .
+            - run: ENV_SILENT=true yarn test      
 
   publish_tag:
     docker:
       - image: buildpack-deps:trusty
+    working_directory: ~/repo
     steps:
-      - checkout
+      - attach_workspace:
+          at: ~/repo
       - add_ssh_keys:
           fingerprints:
-            - "7d:e5:c7:96:fd:0e:b4:ec:1c:49:8f:ea:37:03:f2:82"
+            - "1c:09:57:2b:bf:ea:cd:05:db:34:0c:8e:84:7a:7b:59"
       - run:
-          name: "Generate tag"
-          command: bash <(curl -Ls https://raw.githubusercontent.com/josemiguelmelo/next-git-version/master/generate.sh) > VERSION
+          name: "Add git configuration"
+          command: git config --global user.email "build@circleci.com" && git config --global user.name "CircleCI Build"
       - run:
           name: "Publish tag"
           command: git tag $(cat VERSION) && git push --tags
+
   deploy:
     <<: *defaults
     steps:
       - attach_workspace:
           at: ~/repo
+      - add_ssh_keys:
+          fingerprints:
+            - "1c:09:57:2b:bf:ea:cd:05:db:34:0c:8e:84:7a:7b:59"
       - run:
           name: Authenticate with registry
           command: echo "//registry.npmjs.org/:_authToken=$NPM_TOKEN" > ~/repo/.npmrc
+      - run:
+          name: Package version
+          command: npm version $(cat VERSION)
       - run:
           name: Publish package
           command: npm publish
@@ -50,11 +68,13 @@ workflows:
   version: 2
   build-and-publish:
     jobs:
-      - build-and-test
+      - checkout_and_version
+      - build_and_test:
+          requires:
+            - checkout_and_version
       - publish_tag:
           requires:
-            - build-and-test
-          
+            - build_and_test
       - deploy:
           requires:
             - publish_tag
