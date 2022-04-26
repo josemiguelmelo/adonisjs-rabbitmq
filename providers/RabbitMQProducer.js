@@ -10,8 +10,10 @@ class RabbitMQProducer extends RabbitMQService {
     exchange,
     routingKey,
     content,
-    { type = 'fanout', durable = false } = {}
+    options = {}
   ) {
+    const { type = 'fanout', durable = false } = options
+
     try {
       this._pubChannel.assertExchange(exchange, type, {
         durable
@@ -32,14 +34,14 @@ class RabbitMQProducer extends RabbitMQService {
       )
     } catch (e) {
       this.logger.error('[AMQP Producer] channel publish failure: ', e.message)
-      this._offlinePubQueue.push([exchange, routingKey, content])
+      this._offlinePubQueue.push([exchange, routingKey, content, options])
     }
   }
 
   sendPending() {
     if (this._offlinePubQueue.length > 0) {
-      var [exchange, routingKey, content] = this._offlinePubQueue.shift()
-      this.publish(exchange, routingKey, content)
+      var [exchange, routingKey, content, options] = this._offlinePubQueue.shift()
+      this.publish(exchange, routingKey, content, options)
     }
 
     setTimeout(() => this.sendPending(), 5000)
