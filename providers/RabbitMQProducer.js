@@ -38,10 +38,10 @@ class RabbitMQProducer extends RabbitMQService {
   async startPublisher() {
     this._connection.createConfirmChannel((err, ch) => {
       if (this.closeOnErr(err)) return
-      ch.on('error', function(err) {
+      ch.on('error', (err) => {
         this.logger.error('[AMQP Producer] channel error', err.message)
       })
-      ch.on('close', function() {
+      ch.on('close', () => {
         this.logger.info('[AMQP Producer] channel closed')
       })
 
