@@ -6,20 +6,30 @@ class RabbitMQProducer extends RabbitMQService {
     this._offlinePubQueue = []
   }
 
-  async publish(exchange, routingKey, content) {
+  publish(
+    exchange,
+    routingKey,
+    content,
+    { type = 'fanout', durable = false } = {}
+  ) {
     try {
-      this._pubChannel.assertExchange(exchange, 'fanout', {
-        durable: false
+      this._pubChannel.assertExchange(exchange, type, {
+        durable
       })
 
-      this._pubChannel.publish(exchange, routingKey, Buffer.from(content), { persistent: true },
+      this._pubChannel.publish(
+        exchange,
+        routingKey,
+        Buffer.from(content),
+        { persistent: true },
         (err, _ok) => {
           if (err) {
             this.logger.error('[AMQP Producer] publish error:', err)
             this._offlinePubQueue.push([exchange, routingKey, content])
             this._pubChannel.connection.close()
           }
-        })
+        }
+      )
     } catch (e) {
       this.logger.error('[AMQP Producer] channel publish failure: ', e.message)
       this._offlinePubQueue.push([exchange, routingKey, content])
